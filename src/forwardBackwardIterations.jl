@@ -148,11 +148,11 @@ function backward_pass(model, #::SDDP.SPModel,
                       param, #::SDDP.SDDPparameters,
                       V, #::Array{SDDP.PolyhedralFunction, 1},
                       stockTrajectories,
-                      law::NoiseLaw,
+                      law,#::NoiseLaw,
                       init=false)
 
     T = model.stageNumber
-    nXi = law.supportSize
+    #nXi = law.supportSize
     subgradient = 0
     state_t = zeros(Float64, model.dimStates)
 
@@ -160,7 +160,8 @@ function backward_pass(model, #::SDDP.SPModel,
         for k = 1:param.forwardPassNumber
             cost = zeros(1);
             subgradient = zeros(model.dimStates);#TODO access
-
+              
+            nXi = law[t].supportSize
             for w in 1:nXi #TODO: number of alea at t + can be parallelized
                 state_t = extract_vector_from_3Dmatrix(stockTrajectories, t, k)
                 alea_t  = law.support[w]

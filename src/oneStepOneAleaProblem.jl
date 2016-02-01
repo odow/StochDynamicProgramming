@@ -56,6 +56,8 @@ TODO: update returns
 TODO: add types in function parameters
 
 """
+C = [0.5;2.0]
+
 function solve_one_step_one_alea(model, #::SDDP.LinearDynamicLinearCostSPmodel,
                                  param, #::SDDP.SDDPparameters,
                                  V, #::Vector{SDDP.PolyhedralFunction},
@@ -70,19 +72,35 @@ function solve_one_step_one_alea(model, #::SDDP.LinearDynamicLinearCostSPmodel,
     @defVar(m, x)
     @defVar(m, 0 <= u <= 10)
     @defVar(m, alpha)
-    @defVar(m, cost)
-
+    
+    if (t==2)
+          @defVar(m, X)
+    end
 
     @addConstraint(m, state_constraint, x .== xt)
     # TODO: implement cost function in PolyhedralFunction
-    @addConstraint(m, cost >= .5*x)
-    @addConstraint(m, cost >= -3*x)
+    
+    if (t==2)
+         @addConstraint(m, X >= x)
+         @addConstraint(m, X >= xi)
+    end
+    
+    #@addConstraint(m, cost >= .5*x)
+    #@addConstraint(m, cost >= -3*x)
 
     for i=1:V[t+1].numCuts
         @addConstraint(m, betas[i] + lambdas[i]*model.dynamics(x, u, xi) .<= alpha)
     end
-
-    @setObjective(m, Min, cost + alpha + u)
+     
+    if (t==1)
+          @setObjective(m, Min,C[1]*u  + alpha)
+    end
+    
+    if (t==2)
+          @setObjective(m, Min,(C[2]-5)*xi -C[2]*X + alpha)
+    end
+    
+    #@setObjective(m, Min, cost + alpha + u)
 
     status = solve(m)
     solved = (string(status) == "Optimal")

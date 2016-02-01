@@ -31,16 +31,17 @@ end
 
 function initialize_value_functions( model::SDDP.LinearDynamicLinearCostSPmodel,
                                      param::SDDP.SDDPparameters,
-                                     law::NoiseLaw
+                                     law#::NoiseLaw
                         )
 
     V_null = get_null_value_functions_array(model)
     println("ok")
     V = Array{SDDP.PolyhedralFunction}(model.stageNumber)
 
-    aleas = simulate_scenarios(law,
-                               (param.forwardPassNumber,
-                                model.stageNumber, 1))
+    #aleas = simulate_scenarios(law,
+    #                          (param.forwardPassNumber,
+    #                            model.stageNumber, 1))
+    aleas = simulate(law, 1)
 
     n = param.forwardPassNumber
 
@@ -85,9 +86,13 @@ function optimize(model::SDDP.SPModel,
                   param::SDDP.SDDPparameters)
 
     # Initialize value functions:
-    law = NoiseLaw([0., 1., 2., 3.], [.2, .4, .3, .1])
+    #law = NoiseLaw([0., 1., 2., 3.], [.2, .4, .3, .1])
+    law0 = NoiseLaw([0.],[1.])
+    law1 = NoiseLaw([0., 1., 2., 3.], [.25, .25, .25, .25])
+    law  = [law0,law1]
     V = initialize_value_functions(model, param, law)
-    aleas = simulate_scenarios(law ,(param.forwardPassNumber, model.stageNumber, 1))
+    #aleas = simulate_scenarios(law ,(param.forwardPassNumber, model.stageNumber, 1))
+    aleas = simulate(law, 1)
     stopping_test::Bool = false
     iteration_count::Int64 = 0
 

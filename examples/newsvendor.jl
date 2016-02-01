@@ -6,13 +6,15 @@
 # Test SDDP with the newsvendor case study
 #############################################################################
 
-include("../src/SDDPoptimize.jl")
+include("../src/SDDP.jl")
 include("../src/simulate.jl")
+include("../src/SDDPoptimize.jl")
 
-using Clp
+
+using CPLEX
 using JuMP
 
-N_STAGES = 20
+N_STAGES = 1
 N_SCENARIOS = 1
 
 
@@ -39,7 +41,7 @@ function init_problem()
     # Instantiate model:
     x0 = 0
     model = SDDP.LinearDynamicLinearCostSPmodel(N_STAGES, 1, 1, x0, cost_t, dynamic)
-    solver = ClpSolver()
+    solver = CplexSolver()
     params = SDDP.SDDPparameters(solver, N_SCENARIOS)
 
     return model, params
@@ -49,10 +51,14 @@ end
 function solve_newsvendor()
     model, params = init_problem()
     V = optimize(model, params)
-    law = NoiseLaw([0., 1., 2., 3.], [.2, .4, .3, .1])
+    law0 = NoiseLaw([0.],[1.])
+    law1 = NoiseLaw([1., 2., 3., 4.], [.25, .25, .25, .25])
+    law  = [law0,law1] 
 
-
-    aleas = simulate_scenarios(law ,(1, model.stageNumber, 1))
+    #aleas = simulate_scenarios(law ,(1, model.stageNumber, 1))
+    aleas = simulate(law , 1)
+    
+    
     costs, stocks = forward_simulations(model, params, V, 1, aleas)
     println(stocks)
     println(costs)

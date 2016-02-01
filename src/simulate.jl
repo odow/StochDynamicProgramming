@@ -57,6 +57,9 @@ Returns :
 - scenarios Array(Float64,n,T)
     an Array of scenario, scenarios[i,:] being the ith noise scenario
 """
+
+#=
+"
 function simulate(law::Vector{NoiseLaw}, n::Int64)
     if n <= 0
         error("negative number of simulations")
@@ -69,7 +72,26 @@ function simulate(law::Vector{NoiseLaw}, n::Int64)
             new_val = law[t].support[:,rand(Categorical(law[t].proba))]
             push!(scenario, new_val)
         end
-        scenarios[i,:]=scenario
+        scenarios[i,:]=scenarlaw0io
+    end
+
+    return scenarios
+end
+"
+=#
+
+function simulate(law::Vector{NoiseLaw}, n::Int64)
+    if n <= 0
+        error("negative number of simulations")
+    end
+    Tf = length(law)
+    scenarios = Array{Float64,3}
+    scenarios = zeros(n,Tf,1)
+    for i = 1:n#TODO can be parallelized
+        for t=1:Tf
+            new_val = law[t].support[:,rand(Categorical(law[t].proba))]
+            scenarios[i,t,:] = new_val
+        end
     end
 
     return scenarios
