@@ -63,7 +63,7 @@ function forward_simulations(model, #::SDDP.LinearDynamicLinearCostSPmodel,
     # TODO simplify if returnStocks=false
     # TODO stock Controls
     T = model.stageNumber
-    stocks = zeros(param.forwardPassNumber, T, model.dimStates)
+     stocks = zeros(param.forwardPassNumber, T, model.dimStates)
     # TODO declare stock as an array of states
     # specify initial state stocks[k,0]=x0
     # TODO generate scenarios xi
@@ -77,6 +77,7 @@ function forward_simulations(model, #::SDDP.LinearDynamicLinearCostSPmodel,
 
         for t=1:T-1
             state_t = extract_vector_from_3Dmatrix(stocks, t, k)
+            state_t = [4.0]
             alea_t = extract_vector_from_3Dmatrix(xi, t, k)
             status, nextstep = solve_one_step_one_alea(
                                             model,
@@ -88,7 +89,10 @@ function forward_simulations(model, #::SDDP.LinearDynamicLinearCostSPmodel,
 
             stocks[k, t+1, :] = nextstep.next_state
             opt_control = nextstep.optimal_control
-
+            println(" ")
+            println("optcontrol")
+            println(opt_control)   
+            println(" ")
             #TODO: implement returnCosts
             if returnCosts
                 costs[k] += model.costFunctions(state_t, opt_control, alea_t)
@@ -164,7 +168,7 @@ function backward_pass(model, #::SDDP.SPModel,
             nXi = law[t].supportSize
             for w in 1:nXi #TODO: number of alea at t + can be parallelized
                 state_t = extract_vector_from_3Dmatrix(stockTrajectories, t, k)
-                alea_t  = law.support[w]
+                alea_t  = law[t].support[w]
 
                 nextstep = solve_one_step_one_alea(model,
                                                    param,
@@ -178,8 +182,8 @@ function backward_pass(model, #::SDDP.SPModel,
                 #TODO: obtain probability cost += prob[w, t] * costw
                 #TODO: add non uniform distribution laws
                 #TODO: compute probability of costs outside this loop
-                cost += law.proba[w] * costw
-                subgradient += law.proba[w] * subgradientw
+                cost += law[t].proba[w] * costw
+                subgradient += law[t].proba[w] * subgradientw
             end
 
             beta = cost - dot(subgradient, state_t)

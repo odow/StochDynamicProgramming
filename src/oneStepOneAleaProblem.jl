@@ -67,6 +67,15 @@ function solve_one_step_one_alea(model, #::SDDP.LinearDynamicLinearCostSPmodel,
 
     lambdas = V[t+1].lambdas
     betas = V[t+1].betas
+    println(" ")
+            println("lambdas")
+            println(lambdas)   
+            println(" ")
+            
+    println(" ")
+            println("betas")
+            println(betas)   
+            println(" ")
     # TODO: factorize the definition of the model in PolyhedralFunction
     m = Model(solver=param.solver)
     @defVar(m, x)
@@ -99,6 +108,11 @@ function solve_one_step_one_alea(model, #::SDDP.LinearDynamicLinearCostSPmodel,
     if (t==2)
           @setObjective(m, Min,(C[2]-5)*xi -C[2]*X + alpha)
     end
+    
+    println(" ")
+            println("model")
+            println(m)   
+            println(" ")
     
     #@setObjective(m, Min, cost + alpha + u)
 

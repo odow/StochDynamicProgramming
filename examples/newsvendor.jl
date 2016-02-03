@@ -14,7 +14,7 @@ include("../src/SDDPoptimize.jl")
 using CPLEX
 using JuMP
 
-N_STAGES = 1
+N_STAGES = 2
 N_SCENARIOS = 1
 
 
@@ -39,7 +39,7 @@ end
 
 function init_problem()
     # Instantiate model:
-    x0 = 0
+    x0 = 4
     model = SDDP.LinearDynamicLinearCostSPmodel(N_STAGES, 1, 1, x0, cost_t, dynamic)
     solver = CplexSolver()
     params = SDDP.SDDPparameters(solver, N_SCENARIOS)
@@ -52,7 +52,7 @@ function solve_newsvendor()
     model, params = init_problem()
     V = optimize(model, params)
     law0 = NoiseLaw([0.],[1.])
-    law1 = NoiseLaw([1., 2., 3., 4.], [.25, .25, .25, .25])
+    law1 = NoiseLaw([1., 2., 3., 4.], [.05, .75, .15, .05])
     law  = [law0,law1] 
 
     #aleas = simulate_scenarios(law ,(1, model.stageNumber, 1))
@@ -62,7 +62,14 @@ function solve_newsvendor()
     costs, stocks = forward_simulations(model, params, V, 1, aleas)
     println(stocks)
     println(costs)
-
+    
+    u0opt = law1.support[2]
+    u1opt = law1.support - min(u0opt,law1.support)
+    cost = u1opt*law1.proba + 0.5*u0opt + (2-5)*law1.support*law1.proba -2*min(u0opt,law1.support)*law1.proba
+     println(u0opt)
+     println(u1opt)
+     println(cost)
+    
 end
 
 @time solve_newsvendor()

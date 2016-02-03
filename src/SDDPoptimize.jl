@@ -35,7 +35,6 @@ function initialize_value_functions( model::SDDP.LinearDynamicLinearCostSPmodel,
                         )
 
     V_null = get_null_value_functions_array(model)
-    println("ok")
     V = Array{SDDP.PolyhedralFunction}(model.stageNumber)
 
     #aleas = simulate_scenarios(law,
@@ -45,20 +44,25 @@ function initialize_value_functions( model::SDDP.LinearDynamicLinearCostSPmodel,
 
     n = param.forwardPassNumber
 
-    V[end] = SDDP.PolyhedralFunction(zeros(1), zeros(1, 1), 1)
+    V[end] = SDDP.PolyhedralFunction([-7.4;-10.25;-10.85;-11], [-4. 0.; -2. 0.; 0. 0.;1. 0.], 4)
 
-    stockTrajectories = forward_simulations(model,
-                        param,
-                        V_null,
-                        n,
-                        aleas)[2]
+    #stockTrajectories = forward_simulations(model,
+     #                   param,
+      #                  V_null,
+       #                 n,
+        #                aleas)[2]
+
+    stockTrajectories = zeros(1,2,1)
+    stockTrajectories[1,1,1] = 4.0
+    stockTrajectories[1,1,1] = 0.0
+
     backward_pass(model,
                   param,
                   V,
                   stockTrajectories,
                   law,
                   true)
-    return V_null
+    return V
 end
 
 
@@ -98,7 +102,7 @@ function optimize(model::SDDP.SPModel,
 
     n = param.forwardPassNumber
 
-    for i = 1:20
+    for i = 1:2
         stockTrajectories = forward_simulations(model,
                             param,
                             V,
@@ -110,7 +114,8 @@ function optimize(model::SDDP.SPModel,
                       stockTrajectories,
                       law)
         # TODO: stopping test
-
+          
+          println(stockTrajectories)
         iteration_count+=1;
     end
 
